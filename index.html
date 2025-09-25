@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Number Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f8f8f8;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .converter-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ccc;
+        }
+
+        .convert-btn {
+            background-color: #f0f0f0;
+            color: #333;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .convert-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        .result-container {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            min-height: 80px;
+        }
+
+        .result {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            word-break: break-all;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .result-text {
+            font-size: 16px;
+            color: #666;
+            text-align: center;
+            font-style: italic;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            color: #666;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .heart {
+            color: #ff6b6b;
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 24px;
+            }
+            
+            .converter-card {
+                padding: 20px;
+            }
+            
+            .result {
+                font-size: 20px;
+            }
+            
+            .result-text {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Social Media Number Converter</h1>
+            <p class="subtitle">Convert numbers with suffixes (k, m, b, t) to Indian format</p>
+        </header>
+
+        <div class="converter-card">
+            <div class="input-group">
+                <label for="numberInput">Enter number with suffix:</label>
+                <input type="text" id="numberInput" placeholder="e.g., 500k, 2.5m, 1.2b">
+            </div>
+            
+            <button class="convert-btn" onclick="convertNumber()">Convert</button>
+            
+            <div class="result-container">
+                <div class="result" id="commaResult">Enter a number to convert</div>
+                <div class="result-text" id="textResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Made with <span class="heart">❤️</span> by Sauravhhh
+    </footer>
+
+    <script>
+        function convertNumber() {
+            const input = document.getElementById('numberInput').value.trim().toLowerCase();
+            const commaResultElement = document.getElementById('commaResult');
+            const textResultElement = document.getElementById('textResult');
+            
+            if (!input) {
+                commaResultElement.textContent = 'Please enter a number';
+                textResultElement.textContent = '';
+                return;
+            }
+            
+            let number = 0;
+            
+            // Check if input has a suffix
+            if (input.includes('k')) {
+                number = parseFloat(input.replace('k', '')) * 1000;
+            } else if (input.includes('m')) {
+                number = parseFloat(input.replace('m', '')) * 1000000;
+            } else if (input.includes('b')) {
+                number = parseFloat(input.replace('b', '')) * 1000000000;
+            } else if (input.includes('t')) {
+                number = parseFloat(input.replace('t', '')) * 1000000000000;
+            } else {
+                // If no suffix, try to parse as a regular number
+                number = parseFloat(input.replace(/,/g, ''));
+            }
+            
+            if (isNaN(number)) {
+                commaResultElement.textContent = 'Invalid input';
+                textResultElement.textContent = '';
+                return;
+            }
+            
+            // Format with Indian comma system
+            const formattedNumber = formatIndianNumber(number);
+            commaResultElement.textContent = formattedNumber;
+            
+            // Convert to text format
+            const textFormat = numberToWordsIndian(number);
+            textResultElement.textContent = `(${textFormat})`;
+        }
+        
+        function formatIndianNumber(num) {
+            // Convert to string and split into integer and decimal parts
+            const numStr = num.toString();
+            let [integerPart, decimalPart] = numStr.split('.');
+            
+            // Remove any existing commas
+            integerPart = integerPart.replace(/,/g, '');
+            
+            // Format the integer part according to Indian system
+            let formattedInteger = '';
+            const length = integerPart.length;
+            
+            // First 3 digits from right
+            if (length > 3) {
+                formattedInteger = integerPart.substring(length - 3);
+                integerPart = integerPart.substring(0, length - 3);
+                
+                // Then add commas after every 2 digits
+                while (integerPart.length > 0) {
+                    if (integerPart.length > 2) {
+                        formattedInteger = integerPart.substring(integerPart.length - 2) + ',' + formattedInteger;
+                        integerPart = integerPart.substring(0, integerPart.length - 2);
+                    } else {
+                        formattedInteger = integerPart + ',' + formattedInteger;
+                        integerPart = '';
+                    }
+                }
+            } else {
+                formattedInteger = integerPart;
+            }
+            
+            // Add decimal part if exists
+            if (decimalPart) {
+                return formattedInteger + '.' + decimalPart;
+            }
+            
+            return formattedInteger;
+        }
+        
+        function numberToWordsIndian(num) {
+            const numStr = num.toString();
+            let [integerPart, decimalPart] = numStr.split('.');
+            
+            // Handle integer part
+            let integerWords = '';
+            if (integerPart === '0') {
+                integerWords = 'Zero';
+            } else {
+                integerWords = convertIntegerToWordsIndian(integerPart);
+            }
+            
+            // Handle decimal part if exists
+            let decimalWords = '';
+            if (decimalPart) {
+                decimalWords = ' Point';
+                for (let i = 0; i < decimalPart.length; i++) {
+                    const digit = parseInt(decimalPart[i]);
+                    decimalWords += ' ' + convertDigitToWord(digit);
+                }
+            }
+            
+            return integerWords + decimalWords;
+        }
+        
+        function convertIntegerToWordsIndian(numStr) {
+            // Remove any non-digit characters
+            numStr = numStr.replace(/\D/g, '');
+            
+            // Handle lakh crore (10^12) and above
+            if (numStr.length > 12) {
+                const lakhCrorePart = numStr.substring(0, numStr.length - 12);
+                const remainderPart = numStr.substring(numStr.length - 12);
+                
+                let words = '';
+                
+                // Convert lakh crore part
+                if (lakhCrorePart !== '') {
+                    words += convertLargeNumber(lakhCrorePart) + ' Lakh Crore';
+                }
+                
+                // Convert remainder part (if not all zeros)
+                const remainderPartTrimmed = remainderPart.replace(/^0+/, '');
+                if (remainderPartTrimmed !== '') {
+                    if (words) {
+                        words += ' ';
+                    }
+                    words += convertIntegerToWordsIndian(remainderPartTrimmed);
+                }
+                
+                return words;
+            }
+            
+            // For numbers with 12 digits or less, use the standard conversion
+            let words = '';
+            
+            // Extract parts from right to left
+            let unitsPart = '';
+            let thousandsPart = '';
+            let lakhsPart = '';
+            let croresPart = '';
+            
+            // Extract units (last 3 digits)
+            if (numStr.length > 3) {
+                unitsPart = numStr.substring(numStr.length - 3);
+                numStr = numStr.substring(0, numStr.length - 3);
+            } else {
+                unitsPart = numStr;
+                numStr = '';
+            }
+            
+            // Extract thousands (next 2 digits)
+            if (numStr.length > 0) {
+                if (numStr.length > 2) {
+                    thousandsPart = numStr.substring(numStr.length - 2);
+                    numStr = numStr.substring(0, numStr.length - 2);
+                } else {
+                    thousandsPart = numStr;
+                    numStr = '';
+                }
+            }
+            
+            // Extract lakhs (next 2 digits)
+            if (numStr.length > 0) {
+                if (numStr.length > 2) {
+                    lakhsPart = numStr.substring(numStr.length - 2);
+                    numStr = numStr.substring(0, numStr.length - 2);
+                } else {
+                    lakhsPart = numStr;
+                    numStr = '';
+                }
+            }
+            
+            // The rest is crores
+            croresPart = numStr;
+            
+            // Convert each part
+            if (croresPart !== '') {
+                words += convertLargeNumber(croresPart) + ' Crore';
+            }
+            
+            if (lakhsPart !== '') {
+                const lakhsValue = parseInt(lakhsPart);
+                if (lakhsValue > 0) {
+                    words += (words ? ' ' : '') + convertThreeDigits(lakhsValue) + ' Lakh';
+                }
+            }
+            
+            if (thousandsPart !== '') {
+                const thousandsValue = parseInt(thousandsPart);
+                if (thousandsValue > 0) {
+                    words += (words ? ' ' : '') + convertThreeDigits(thousandsValue) + ' Thousand';
+                }
+            }
+            
+            if (unitsPart !== '') {
+                const unitsValue = parseInt(unitsPart);
+                if (unitsValue > 0) {
+                    words += (words ? ' ' : '') + convertThreeDigits(unitsValue);
+                }
+            }
+            
+            return words;
+        }
+        
+        function convertLargeNumber(numStr) {
+            // Remove leading zeros
+            numStr = numStr.replace(/^0+/, '');
+            if (numStr === '') return 'Zero';
+            
+            // Convert to a number and break into parts
+            const num = parseInt(numStr);
+            if (num === 0) return 'Zero';
+            
+            let words = '';
+            
+            // Handle numbers up to 9999
+            if (num < 10000) {
+                return convertThreeDigits(num);
+            }
+            
+            // For larger numbers, break into thousands
+            const thousands = Math.floor(num / 1000);
+            const remainder = num % 1000;
+            
+            if (thousands > 0) {
+                words += convertThreeDigits(thousands) + ' Thousand';
+            }
+            
+            if (remainder > 0) {
+                words += (words ? ' ' : '') + convertThreeDigits(remainder);
+            }
+            
+            return words;
+        }
+        
+        function convertThreeDigits(num) {
+            const units = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+            const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+            
+            let words = '';
+            
+            // Hundreds
+            if (num >= 100) {
+                const hundred = Math.floor(num / 100);
+                words += units[hundred] + ' Hundred';
+                num %= 100;
+            }
+            
+            // Tens and units
+            if (num >= 20) {
+                const ten = Math.floor(num / 10);
+                words += (words ? ' ' : '') + tens[ten];
+                num %= 10;
+            }
+            
+            if (num >= 10) {
+                words += (words ? ' ' : '') + teens[num - 10];
+                num = 0;
+            }
+            
+            if (num > 0) {
+                words += (words ? ' ' : '') + units[num];
+            }
+            
+            return words;
+        }
+        
+        function convertDigitToWord(digit) {
+            const units = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+            return units[digit];
+        }
+        
+        // Allow pressing Enter to convert
+        document.getElementById('numberInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                convertNumber();
+            }
+        });
+    </script>
+</body>
+  </html>
